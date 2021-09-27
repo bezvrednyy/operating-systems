@@ -1,0 +1,1 @@
+type Tuple3<T> = [T, T, T]
