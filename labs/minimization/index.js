@@ -1,4 +1,3 @@
-import {generateKey} from 'crypto'
 import * as fs from 'fs'
 
 /** @typedef {string} */
@@ -11,78 +10,70 @@ let OutputSignal
 let InputSignal
 
 /** @typedef {string} */
-let EqualClass
+let EquivalenceClass
+
+/** @typedef {Map<InputSignal, State>} */
+let MoorInitialTransitionsMap
+
+/**
+ * @typedef {Map<State, MoorInitialTransitionsMap>}
+ */
+let MoorInitialAutomatonMap
 
 /**
  * @typedef {{
- *   inputSignal: InputSignal,
- *   endState: State,
+ *   equivalenceClass: EquivalenceClass,
+ *   transitions: Map<InputSignal, EquivalenceClass>
  * }}
  */
-let TransitionInfo
+let MoorEquivalenceClassInfo
 
 /**
- * @typedef {Map<State, Array<TransitionInfo>>}
- */
-let MoorStateInfo
-
-/**
- * @typedef {Map<OutputSignal, MoorStateInfo>}
- */
-let MoorInitialAutomaton
-
-/**
- * @typedef {{
- *   inputSignal: InputSignal,
- *   endEqualClass: EqualClass,
- * }}
- */
-let ClassTransitionInfo
-
-/**
- * @typedef {Map<EqualClass, Array<TransitionInfo>>}
- */
-let MoorEqualClassesMap
-
-/**
- * @typedef {Map<OutputSignal, MoorEqualClassesMap>}
+ * @typedef {Map<State, MoorEquivalenceClassInfo>}
  */
 let MoorConvertedAutomaton
 
 /**
  * @param {Array<string>} rawData
- * @return {MoorInitialAutomaton}
+ * @return {{
+ *   stateAndOutputSignalsMap: Map<State, OutputSignal>,
+ *   initialMoorAutomaton: MoorInitialAutomatonMap,
+ * }}
  */
 function parseMoorAutomaton(rawData) {
-    /** @type {MoorInitialAutomaton} */
-    const moorAutomaton = new Map()
-    /** @type {Map<InputSignal, Array<State>>} */
-    const transitionsMap = new Map()
+    /** @type {Map<State, OutputSignal>} */
+    const stateAndOutputSignalsMap = new Map()
+    /** @type {MoorInitialAutomatonMap} */
+    const initialMoorAutomaton = new Map()
 
-    for (let i = 1; i < rawData.length; ++i) {
-        const [inputSignal, rawStates] = rawData[i].split(': ')
-        const states = rawStates.split(' ')
-        transitionsMap.set(inputSignal, states)
-    }
+
 
     const moorStates = rawData[0].split(' ')
-    moorStates.forEach((moorState, index) => {
-        const [state, outputSignal] = moorState.split('/')
-        const stateTransitionsMap = moorAutomaton.get(outputSignal)
-        if (stateTransitionsMap) {
-            if (stateTransitionsMap.has(state)) {
-                throw new Error(`Ошибка синтаксиса: дублирование состояния: "${state}".`)
-            }
-            stateTransitionsMap.set(state, convertRawTransitionsToArrayByIndex(transitionsMap, index))
-        }
-        else {
-            moorAutomaton.set(outputSignal, new Map([
-                [state, convertRawTransitionsToArrayByIndex(transitionsMap, index)],
-            ]))
-        }
+    moorStates.forEach(state => {
+        const [startState, outputSignal] = state.split('/')
+        stateAndOutputSignalsMap.set(startState, outputSignal)
     })
 
-    return moorAutomaton
+    for (let i = 1; i < rawData.length; ++i) {
+        const [inputSignal, rawNextStates] = rawData[i].split(': ')
+        const nextStates = rawNextStates.split(' ')
+
+        Array.from(stateAndOutputSignalsMap.keys()).forEach((startState, k) => {
+            const transitionsMap = initialMoorAutomaton.get(startState)
+            if (transitionsMap) {
+                transitionsMap.set(inputSignal, nextStates[k])
+            } else {
+                initialMoorAutomaton.set(startState, new Map([
+                    [inputSignal, nextStates[k]],
+                ]))
+            }
+        })
+    }
+
+    return {
+        stateAndOutputSignalsMap,
+        initialMoorAutomaton,
+    }
 }
 
 /**
@@ -110,39 +101,42 @@ function start() {
         }
         const dataRows =  data.split('\n')
         if (dataRows[0] === 'Mr') {
-            const moorAutomaton = parseMoorAutomaton(dataRows.slice(4))
+            const {
+                stateAndOutputSignalsMap,
+                initialMoorAutomaton,
+            } = parseMoorAutomaton(dataRows.slice(4))
         }
     })
 }
 
-/**
- * @param {MoorInitialAutomaton} moorAutomaton
- */
-function minimizeMoorAutomaton(moorAutomaton) {
-    /** @type {MoorInitialAutomaton} */
-    const newAutomaton = new Map()
-    for (const [equalClassId, stateTransitionsMap] of moorAutomaton.entries()) {
-        /** @type {Map<string, Array<State>>} */
-        const subClasses = new Map()
-        for (const [startState, transitions] of stateTransitionsMap.entries()) {
-            let statesString = ''
-            transitions.forEach(({endState}) => statesString += endState)
-            const subClassStates = subClasses.get(statesString)
-            if (subClassStates) {
-                subClassStates.push(startState)
-            }
-            else {
-                subClasses.set(statesString, [startState])
-            }
-        }
-        subClasses.forEach(states => {
-            /** @type {MoorStateInfo} */
-            const newEqualClass = new Map()
-            states.forEach(q => newEqualClass.set(q, []))
-            newAutomaton.set(uuidv4(), newEqualClass)
-        })
-    }
-}
+// /**
+//  * @param {MoorConvertedAutomaton} moorAutomaton
+//  */
+// function minimizeMoorAutomaton(moorAutomaton) {
+//     /** @type {MoorConvertedAutomaton} */
+//     const newAutomaton = new Map()
+//     for (const [equalClassId, stateTransitionsMap] of moorAutomaton.entries()) {
+//         /** @type {Map<string, Array<State>>} */
+//         const subClasses = new Map()
+//         for (const [startState, transitions] of stateTransitionsMap.entries()) {
+//             let statesString = ''
+//             transitions.forEach(({endState}) => statesString += endState)
+//             const subClassStates = subClasses.get(statesString)
+//             if (subClassStates) {
+//                 subClassStates.push(startState)
+//             }
+//             else {
+//                 subClasses.set(statesString, [startState])
+//             }
+//         }
+//         subClasses.forEach(states => {
+//             /** @type {MoorStateInfo} */
+//             const newEqualClass = new Map()
+//             states.forEach(q => newEqualClass.set(q, []))
+//             newAutomaton.set(uuidv4(), newEqualClass)
+//         })
+//     }
+// }
 
 function uuidv4() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
