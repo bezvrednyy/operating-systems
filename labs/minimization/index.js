@@ -31,7 +31,7 @@ let MoorEquivalenceClassInfo
 /**
  * @typedef {Map<State, MoorEquivalenceClassInfo>}
  */
-let MoorConvertedAutomaton
+let MoorAutomatonForMinimizationMap
 
 /**
  * @param {Array<string>} rawData
@@ -45,8 +45,6 @@ function parseMoorAutomaton(rawData) {
     const stateAndOutputSignalsMap = new Map()
     /** @type {MoorInitialAutomatonMap} */
     const initialMoorAutomaton = new Map()
-
-
 
     const moorStates = rawData[0].split(' ')
     moorStates.forEach(state => {
@@ -77,16 +75,32 @@ function parseMoorAutomaton(rawData) {
 }
 
 /**
- * @param {Map<InputSignal, Array<State>>} rawTransitions
- * @param {number} index
- * @return
+ * @param {{
+ *   stateAndOutputSignalsMap: Map<State, OutputSignal>,
+ *   initialMoorAutomaton: MoorInitialAutomatonMap,
+ * }} args
+ * @return {MoorAutomatonForMinimizationMap}
  */
-function convertRawTransitionsToArrayByIndex(rawTransitions, index) {
-    const inputSignals = Array.from(rawTransitions.keys())
-    return inputSignals.map(x => ({
-        inputSignal: x,
-        endState: rawTransitions.get(x)[index],
-    }))
+function convertMoorAutomatonForMinimization({
+    stateAndOutputSignalsMap,
+    initialMoorAutomaton,
+}) {
+    /** @type {MoorAutomatonForMinimizationMap} */
+    const automatonForMinimizationMap = new Map()
+    initialMoorAutomaton.forEach((transitionsMap, startState) => {
+        /** @type {Map<InputSignal, EquivalenceClass>} */
+        const convertedTransitionsMap = new Map()
+        transitionsMap.forEach((nextState, inputSignal) => {
+            const outputSignal = stateAndOutputSignalsMap.get(nextState)
+            convertedTransitionsMap.set(inputSignal, outputSignal)
+        })
+
+        automatonForMinimizationMap.set(startState, {
+            equivalenceClass: stateAndOutputSignalsMap.get(startState),
+            transitions: convertedTransitionsMap,
+        })
+    })
+    return automatonForMinimizationMap
 }
 
 function start() {
@@ -105,6 +119,11 @@ function start() {
                 stateAndOutputSignalsMap,
                 initialMoorAutomaton,
             } = parseMoorAutomaton(dataRows.slice(4))
+            const automationForMinimization = convertMoorAutomatonForMinimization({
+                stateAndOutputSignalsMap,
+                initialMoorAutomaton,
+            })
+            console.log('')
         }
     })
 }
