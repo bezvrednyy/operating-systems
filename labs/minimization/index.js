@@ -1,3 +1,4 @@
+import {generateKey} from 'crypto'
 import * as fs from 'fs'
 
 /** @typedef {string} */
@@ -8,6 +9,9 @@ let OutputSignal
 
 /** @typedef {string} */
 let InputSignal
+
+/** @typedef {string} */
+let EqualClass
 
 /**
  * @typedef {{
@@ -26,6 +30,24 @@ let MoorStateInfo
  * @typedef {Map<OutputSignal, MoorStateInfo>}
  */
 let MoorInitialAutomaton
+
+/**
+ * @typedef {{
+ *   inputSignal: InputSignal,
+ *   endEqualClass: EqualClass,
+ * }}
+ */
+let ClassTransitionInfo
+
+/**
+ * @typedef {Map<EqualClass, Array<TransitionInfo>>}
+ */
+let MoorEqualClassesMap
+
+/**
+ * @typedef {Map<OutputSignal, MoorEqualClassesMap>}
+ */
+let MoorConvertedAutomaton
 
 /**
  * @param {Array<string>} rawData
@@ -91,6 +113,42 @@ function start() {
             const moorAutomaton = parseMoorAutomaton(dataRows.slice(4))
         }
     })
+}
+
+/**
+ * @param {MoorInitialAutomaton} moorAutomaton
+ */
+function minimizeMoorAutomaton(moorAutomaton) {
+    /** @type {MoorInitialAutomaton} */
+    const newAutomaton = new Map()
+    for (const [equalClassId, stateTransitionsMap] of moorAutomaton.entries()) {
+        /** @type {Map<string, Array<State>>} */
+        const subClasses = new Map()
+        for (const [startState, transitions] of stateTransitionsMap.entries()) {
+            let statesString = ''
+            transitions.forEach(({endState}) => statesString += endState)
+            const subClassStates = subClasses.get(statesString)
+            if (subClassStates) {
+                subClassStates.push(startState)
+            }
+            else {
+                subClasses.set(statesString, [startState])
+            }
+        }
+        subClasses.forEach(states => {
+            /** @type {MoorStateInfo} */
+            const newEqualClass = new Map()
+            states.forEach(q => newEqualClass.set(q, []))
+            newAutomaton.set(uuidv4(), newEqualClass)
+        })
+    }
+}
+
+function uuidv4() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
 }
 
 // /**
