@@ -1,4 +1,5 @@
 import * as fs from 'fs'
+import {filterUnique} from '../../common/utils/filterUnique.js'
 
 /** @typedef {string} */
 let State
@@ -119,47 +120,68 @@ function start() {
                 stateAndOutputSignalsMap,
                 initialMoorAutomaton,
             } = parseMoorAutomaton(dataRows.slice(4))
-            const automationForMinimization = convertMoorAutomatonForMinimization({
+            const automatonForMinimization = convertMoorAutomatonForMinimization({
                 stateAndOutputSignalsMap,
                 initialMoorAutomaton,
             })
+            const equivalenceClassCount = filterUnique(Array.from(stateAndOutputSignalsMap.values())).length
+            const minimizedMoorAutomaton = minimizeMoorAutomaton(automatonForMinimization, equivalenceClassCount, initialMoorAutomaton)
             console.log('')
         }
     })
 }
 
-// /**
-//  * @param {MoorConvertedAutomaton} moorAutomaton
-//  */
-// function minimizeMoorAutomaton(moorAutomaton) {
-//     /** @type {MoorConvertedAutomaton} */
-//     const newAutomaton = new Map()
-//     for (const [equalClassId, stateTransitionsMap] of moorAutomaton.entries()) {
-//         /** @type {Map<string, Array<State>>} */
-//         const subClasses = new Map()
-//         for (const [startState, transitions] of stateTransitionsMap.entries()) {
-//             let statesString = ''
-//             transitions.forEach(({endState}) => statesString += endState)
-//             const subClassStates = subClasses.get(statesString)
-//             if (subClassStates) {
-//                 subClassStates.push(startState)
-//             }
-//             else {
-//                 subClasses.set(statesString, [startState])
-//             }
-//         }
-//         subClasses.forEach(states => {
-//             /** @type {MoorStateInfo} */
-//             const newEqualClass = new Map()
-//             states.forEach(q => newEqualClass.set(q, []))
-//             newAutomaton.set(uuidv4(), newEqualClass)
-//         })
-//     }
-// }
+/**
+ * @param {MoorAutomatonForMinimizationMap} moorAutomaton
+ * @param {number} previousClassesCount
+ * @param {MoorInitialAutomatonMap} initialMoorAutomatonMap
+ */
+function minimizeMoorAutomaton(moorAutomaton, previousClassesCount, initialMoorAutomatonMap) {
+    /** @type {MoorAutomatonForMinimizationMap} */
+    const newAutomaton = new Map()
+    /** @type {Map<State, EquivalenceClass>} */
+    const stateAndEquivalenceClassMap = new Map()
+
+    moorAutomaton.forEach((startStateInfo, startState) => {
+        const {equivalenceClass, transitions} = startStateInfo
+        let uniqueClassId = equivalenceClass
+        transitions.forEach((nextEquivalenceClass, inputSignal) => {
+            uniqueClassId += nextEquivalenceClass
+        })
+        stateAndEquivalenceClassMap.set(startState, uniqueClassId)
+    })
+
+    moorAutomaton.forEach((startStateInfo, startState) => {
+        const {equivalenceClass, transitions} = startStateInfo
+        let uniqueClassId = equivalenceClass
+        transitions.forEach((nextEquivalenceClass, inputSignal) => {
+            uniqueClassId += nextEquivalenceClass
+        })
+
+        /** @type {Map<InputSignal, EquivalenceClass>} */
+        const convertedTransitionsMap = new Map()
+        transitions.forEach((_, inputSignal) => {
+            const nextState = initialMoorAutomatonMap.get(startState).get(inputSignal)
+            const equivalenceClass = stateAndEquivalenceClassMap.get(nextState)
+            convertedTransitionsMap.set(inputSignal, equivalenceClass)
+        })
+
+        newAutomaton.set(startState, {
+            equivalenceClass: uniqueClassId,
+            transitions: convertedTransitionsMap,
+        })
+    })
+
+    const currentClassesCount = filterUnique(Array.from(stateAndEquivalenceClassMap.values())).length
+    if (currentClassesCount === previousClassesCount) {
+        return newAutomaton
+    }
+    return minimizeMoorAutomaton(newAutomaton, currentClassesCount, initialMoorAutomatonMap)
+}
 
 function uuidv4() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
 }
