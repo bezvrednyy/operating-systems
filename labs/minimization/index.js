@@ -159,16 +159,16 @@ function minimizeMoorAutomaton(moorAutomaton, previousClassesCount, initialMoorA
         })
 
         /** @type {Map<InputSignal, EquivalenceClass>} */
-        const convertedTransitionsMap = new Map()
+        const updatedTransitionsMap = new Map()
         transitions.forEach((_, inputSignal) => {
             const nextState = initialMoorAutomatonMap.get(startState).get(inputSignal)
             const equivalenceClass = stateAndEquivalenceClassMap.get(nextState)
-            convertedTransitionsMap.set(inputSignal, equivalenceClass)
+            updatedTransitionsMap.set(inputSignal, equivalenceClass)
         })
 
         newAutomaton.set(startState, {
             equivalenceClass: uniqueClassId,
-            transitions: convertedTransitionsMap,
+            transitions: updatedTransitionsMap,
         })
     })
 
