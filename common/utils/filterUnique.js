@@ -4,9 +4,9 @@
  * @return {Array<T>}
  */
 function filterUnique(values) {
-    return [...new Set(values)]
+	return [...new Set(values)]
 }
 
 export {
-    filterUnique
+	filterUnique,
 }

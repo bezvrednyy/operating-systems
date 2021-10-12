@@ -1,7 +1,8 @@
 {
   "type": "module",
   "devDependencies": {
-    "@types/node": "^16.9.1"
+    "@types/node": "^16.9.1",
+    "eslint": "^8.0.0"
   },
   "scripts": {
     "run-lw1": "node labs/minimization/index.js labs/minimization/input.txt"
