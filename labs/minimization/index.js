@@ -143,21 +143,26 @@ function minimizeMoorAutomaton(moorAutomaton, previousClassesCount, initialMoorA
 	/** @type {Map<State, EquivalenceClass>} */
 	const stateAndEquivalenceClassMap = new Map()
 
-	moorAutomaton.forEach((startStateInfo, startState) => {
+	/**
+	 * @param {MoorEquivalenceClassInfo} startStateInfo
+	 * @return {string}
+	 */
+	function getUniqueStatesClassId(startStateInfo) {
 		const {equivalenceClass, transitions} = startStateInfo
-		let uniqueClassId = equivalenceClass
+		let id = equivalenceClass
 		transitions.forEach((nextEquivalenceClass, inputSignal) => {
-			uniqueClassId += nextEquivalenceClass
+			id += nextEquivalenceClass
 		})
+		return id
+	}
+
+	moorAutomaton.forEach((startStateInfo, startState) => {
+		const uniqueClassId = getUniqueStatesClassId(startStateInfo)
 		stateAndEquivalenceClassMap.set(startState, uniqueClassId)
 	})
 
 	moorAutomaton.forEach((startStateInfo, startState) => {
-		const {equivalenceClass, transitions} = startStateInfo
-		let uniqueClassId = equivalenceClass
-		transitions.forEach((nextEquivalenceClass, inputSignal) => {
-			uniqueClassId += nextEquivalenceClass
-		})
+		const {transitions} = startStateInfo
 
 		/** @type {Map<InputSignal, EquivalenceClass>} */
 		const updatedTransitionsMap = new Map()
@@ -168,7 +173,7 @@ function minimizeMoorAutomaton(moorAutomaton, previousClassesCount, initialMoorA
 		})
 
 		newAutomaton.set(startState, {
-			equivalenceClass: uniqueClassId,
+			equivalenceClass: getUniqueStatesClassId(startStateInfo),
 			transitions: updatedTransitionsMap,
 		})
 	})
