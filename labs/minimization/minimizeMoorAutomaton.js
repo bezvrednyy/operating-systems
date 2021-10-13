@@ -1,6 +1,6 @@
 import {filterUnique} from '../../common/utils/filterUnique.js'
 import {EquivalenceClass, InputSignal, OutputSignal, State} from './model/common.js'
-import {MoorAutomatonForMinimizationMap, MoorEquivalenceClassInfo, MoorInitialAutomatonMap} from './model/moorAutomationData.js'
+import {MoorMinimizedAutomatonMap, MoorEquivalenceClassInfo, MoorInitialAutomatonMap} from './model/moorAutomationData.js'
 
 /**
  * @param {Array<string>} rawData
@@ -10,7 +10,7 @@ function minimizeMoorAutomaton(rawData) {
 		stateAndOutputSignalsMap,
 		initialMoorAutomaton,
 	} = parseMoorAutomaton(rawData)
-	const automatonForMinimization = convertMoorAutomatonForMinimization({
+	const automatonForMinimization = remapMoorInitialAutomatonMapToMoorMinimizedAutomatonMap({
 		stateAndOutputSignalsMap,
 		initialMoorAutomaton,
 	})
@@ -18,8 +18,23 @@ function minimizeMoorAutomaton(rawData) {
 	const minimizedMoorAutomaton = runMinimization(automatonForMinimization, equivalenceClassCount, initialMoorAutomaton)
 	console.log(minimizedMoorAutomaton)
 	//TODO:Сконвертирвоать автомат в удобочитаемый формат и вернуть его. + Здесь же создать метод распечатки такого формата.
-	//TODO:Обновить названия моделей и методов
 	//TODO:Реализовать алгоритм минимизации Мили. сперва на листочке #эффективность
+}
+
+/**
+ * @param {Array<string>} moorStates
+ * @return {Map<State, OutputSignal>}
+ */
+function createStateAndOutputSignalsMap(moorStates) {
+	/** @type {Map<State, OutputSignal>} */
+	const map = new Map()
+
+	moorStates.forEach(state => {
+		const [startState, outputSignal] = state.split('/')
+		map.set(startState, outputSignal)
+	})
+
+	return map
 }
 
 /**
@@ -30,31 +45,34 @@ function minimizeMoorAutomaton(rawData) {
  * }}
  */
 function parseMoorAutomaton(rawData) {
-	/** @type {Map<State, OutputSignal>} */
-	const stateAndOutputSignalsMap = new Map()
-	/** @type {MoorInitialAutomatonMap} */
-	const initialMoorAutomaton = new Map()
+	/**
+	 * @param {InputSignal} inputSignal
+	 * @param {State} startState
+	 * @param {State} nextState
+	 */
+	function fillTransitions(inputSignal, startState, nextState) {
+		const transitionsMap = initialMoorAutomaton.get(startState)
+		if (transitionsMap) {
+			transitionsMap.set(inputSignal, nextState)
+		}
+		else {
+			initialMoorAutomaton.set(startState, new Map([
+				[inputSignal, nextState],
+			]))
+		}
+	}
 
 	const moorStates = rawData[0].split(' ')
-	moorStates.forEach(state => {
-		const [startState, outputSignal] = state.split('/')
-		stateAndOutputSignalsMap.set(startState, outputSignal)
-	})
+	const stateAndOutputSignalsMap = createStateAndOutputSignalsMap(moorStates)
+	/** @type {MoorInitialAutomatonMap} */
+	const initialMoorAutomaton = new Map()
 
 	for (let i = 1; i < rawData.length; ++i) {
 		const [inputSignal, rawNextStates] = rawData[i].split(': ')
 		const nextStates = rawNextStates.split(' ')
 
 		Array.from(stateAndOutputSignalsMap.keys()).forEach((startState, k) => {
-			const transitionsMap = initialMoorAutomaton.get(startState)
-			if (transitionsMap) {
-				transitionsMap.set(inputSignal, nextStates[k])
-			}
-			else {
-				initialMoorAutomaton.set(startState, new Map([
-					[inputSignal, nextStates[k]],
-				]))
-			}
+			fillTransitions(inputSignal, startState, nextStates[k])
 		})
 	}
 
@@ -69,13 +87,13 @@ function parseMoorAutomaton(rawData) {
  *   stateAndOutputSignalsMap: Map<State, OutputSignal>,
  *   initialMoorAutomaton: MoorInitialAutomatonMap,
  * }} args
- * @return {MoorAutomatonForMinimizationMap}
+ * @return {MoorMinimizedAutomatonMap}
  */
-function convertMoorAutomatonForMinimization({
+function remapMoorInitialAutomatonMapToMoorMinimizedAutomatonMap({
 	stateAndOutputSignalsMap,
 	initialMoorAutomaton,
 }) {
-	/** @type {MoorAutomatonForMinimizationMap} */
+	/** @type {MoorMinimizedAutomatonMap} */
 	const automatonForMinimizationMap = new Map()
 	initialMoorAutomaton.forEach((transitionsMap, startState) => {
 		/** @type {Map<InputSignal, EquivalenceClass>} */
@@ -94,7 +112,7 @@ function convertMoorAutomatonForMinimization({
 }
 
 /**
- * @param {MoorAutomatonForMinimizationMap} moorAutomaton
+ * @param {MoorMinimizedAutomatonMap} moorAutomaton
  * @return {{
  *   getNewClassId: function(MoorEquivalenceClassInfo):string,
  *   newClassesCount: number,
@@ -135,12 +153,12 @@ function prepareNewClasses(moorAutomaton) {
 }
 
 /**
- * @param {MoorAutomatonForMinimizationMap} moorAutomaton
+ * @param {MoorMinimizedAutomatonMap} moorAutomaton
  * @param {number} previousClassesCount
  * @param {MoorInitialAutomatonMap} initialMoorAutomatonMap
  */
 function runMinimization(moorAutomaton, previousClassesCount, initialMoorAutomatonMap) {
-	/** @type {MoorAutomatonForMinimizationMap} */
+	/** @type {MoorMinimizedAutomatonMap} */
 	const newAutomaton = new Map()
 	/** @type {Map<State, EquivalenceClass>} */
 	const stateAndEquivalenceClassMap = new Map()

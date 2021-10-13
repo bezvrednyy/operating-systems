@@ -19,11 +19,11 @@ let MoorEquivalenceClassInfo
 /**
  * @typedef {Map<State, MoorEquivalenceClassInfo>}
  */
-let MoorAutomatonForMinimizationMap
+let MoorMinimizedAutomatonMap
 
 export {
 	MoorTransitionsMap,
 	MoorInitialAutomatonMap,
 	MoorEquivalenceClassInfo,
-	MoorAutomatonForMinimizationMap,
+	MoorMinimizedAutomatonMap,
 }
