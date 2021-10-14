@@ -1,6 +1,9 @@
 import * as fs from 'fs'
 import {minimizeMoorAutomaton} from './minimizeMoorAutomaton.js'
 
+/**
+ * @description Нумерация состояний во входном файле должна начинаться с единицы
+ */
 function start() {
 	if (process.argv.length !== 3) {
 		throw new Error('Invalid args count')
