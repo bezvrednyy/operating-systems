@@ -1,6 +1,6 @@
 import {filterUnique} from '../../common/utils/filterUnique.js'
 import {EquivalenceClass, InputSignal, OutputSignal, State} from './model/common.js'
-import {MoorMinimizedAutomatonMap, MoorEquivalenceClassInfo, MoorInitialAutomatonMap} from './model/moorAutomationData.js'
+import {MoorMinimizedAutomatonMap, MoorEquivalenceClassInfo, MoorInitialAutomatonMap, MoorAutomatonPrintInfo} from './model/moorAutomationData.js'
 
 /**
  * @param {Array<string>} rawData
@@ -16,7 +16,8 @@ function minimizeMoorAutomaton(rawData) {
 	})
 	const equivalenceClassCount = filterUnique(Array.from(stateAndOutputSignalsMap.values())).length
 	const minimizedMoorAutomaton = runMinimization(automatonForMinimization, equivalenceClassCount, initialMoorAutomaton)
-	console.log(minimizedMoorAutomaton)
+	const moorForPrint = prepareMoorForPrint(minimizedMoorAutomaton)
+	console.log(moorForPrint)
 	//TODO:Сконвертирвоать автомат в удобочитаемый формат и вернуть его. + Здесь же создать метод распечатки такого формата.
 	//TODO:Реализовать алгоритм минимизации Мили. сперва на листочке #эффективность
 }
@@ -190,6 +191,42 @@ function runMinimization(moorAutomaton, previousClassesCount, initialMoorAutomat
 		return newAutomaton
 	}
 	return runMinimization(newAutomaton, newClassesCount, initialMoorAutomatonMap)
+}
+
+/**
+ * @param {MoorMinimizedAutomatonMap} moorAutomaton
+ * @return {MoorAutomatonPrintInfo}
+ */
+function prepareMoorForPrint(moorAutomaton) {
+	/** @type {Map<EquivalenceClass, State>} */
+	const resultStatesMap = new Map()
+	/** @type {MoorMinimizedAutomatonMap} */
+	const selectiveMoorAutomaton = new Map()
+
+	moorAutomaton.forEach((classInfo, startState) => {
+		if (resultStatesMap.has(classInfo.equivalenceClass)) {
+			return undefined
+		}
+		resultStatesMap.set(classInfo.equivalenceClass, startState)
+		selectiveMoorAutomaton.set(startState, classInfo)
+	})
+
+	let statesString = ''
+	/** @type {Map<InputSignal, string>} */
+	const transitionsMap = new Map()
+
+	selectiveMoorAutomaton.forEach((classInfo, startState) => {
+		statesString += startState + ' '
+		classInfo.transitions.forEach((nextClass, inputSignal) => {
+			const inputSignalTransitions = transitionsMap.get(inputSignal) || ''
+			transitionsMap.set(inputSignal, `${inputSignalTransitions} ${resultStatesMap.get(nextClass)}`)
+		})
+	})
+
+	return {
+		states: statesString,
+		transitions: transitionsMap,
+	}
 }
 
 export {

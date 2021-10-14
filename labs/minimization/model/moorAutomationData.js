@@ -21,9 +21,18 @@ let MoorEquivalenceClassInfo
  */
 let MoorMinimizedAutomatonMap
 
+/**
+ * @typedef {{
+ *   states: string,
+ *   transitions: Map<InputSignal, string>,
+ * }}
+ */
+let MoorAutomatonPrintInfo
+
 export {
 	MoorTransitionsMap,
 	MoorInitialAutomatonMap,
 	MoorEquivalenceClassInfo,
 	MoorMinimizedAutomatonMap,
+	MoorAutomatonPrintInfo,
 }
