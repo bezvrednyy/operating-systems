@@ -2,6 +2,8 @@ import {filterUnique} from '../../common/utils/filterUnique.js'
 import {EquivalenceClass, InputSignal, OutputSignal, State} from './model/common.js'
 import {MoorMinimizedAutomatonMap, MoorEquivalenceClassInfo, MoorInitialAutomatonMap, MoorAutomatonPrintInfo} from './model/moorAutomationData.js'
 
+const DEFAULT_INDENT = ' '.repeat(4)
+
 /**
  * @param {Array<string>} rawData
  */
@@ -16,9 +18,8 @@ function minimizeMoorAutomaton(rawData) {
 	})
 	const equivalenceClassCount = filterUnique(Array.from(stateAndOutputSignalsMap.values())).length
 	const minimizedMoorAutomaton = runMinimization(automatonForMinimization, equivalenceClassCount, initialMoorAutomaton)
-	const moorForPrint = prepareMoorForPrint(minimizedMoorAutomaton)
-	console.log(moorForPrint)
-	//TODO:Сконвертирвоать автомат в удобочитаемый формат и вернуть его. + Здесь же создать метод распечатки такого формата.
+	const moorPrintInfo = prepareMoorForPrint(minimizedMoorAutomaton)
+	printMoorAutomaton(moorPrintInfo)
 	//TODO:Реализовать алгоритм минимизации Мили. сперва на листочке #эффективность
 }
 
@@ -227,6 +228,16 @@ function prepareMoorForPrint(moorAutomaton) {
 		states: statesString,
 		transitions: transitionsMap,
 	}
+}
+
+/**
+ * @param {MoorAutomatonPrintInfo} moorPrintInfo
+ */
+function printMoorAutomaton(moorPrintInfo) {
+	console.log(`${DEFAULT_INDENT + moorPrintInfo.states.trim()}`)
+	moorPrintInfo.transitions.forEach((states, inputSignal) => {
+		console.log(`${inputSignal}: ${states.trim()}`)
+	})
 }
 
 export {
