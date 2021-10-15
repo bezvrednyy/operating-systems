@@ -1,3 +1,5 @@
+import {filterUnique} from '../../common/utils/filterUnique.js'
+import {remapInitialAutomatonMapToMinimizedAutomatonMap, runMinimization} from './common.js'
 import {EquivalenceClass, InitialAutomatonMap, InputSignal, OutputSignal, State} from './model/common.js'
 
 const DEFAULT_INDENT = ' '.repeat(4)
@@ -10,14 +12,15 @@ function minimizeMilesAutomaton(rawData) {
 		stateAndClassesMap,
 		initialMoorAutomaton,
 	} = parseMilesAutomaton(rawData)
-	//TODO: при парсинге можно сразу подготовить формат автомата для минимизации
 
-	// const automatonForMinimization = remapMoorInitialAutomatonMapToMoorMinimizedAutomatonMap({
-	// 	stateAndClassesMap,
-	// 	initialMoorAutomaton,
-	// })
-	// const equivalenceClassCount = filterUnique(Array.from(stateAndClassesMap.values())).length
-	// const minimizedAutomaton = runMinimization(automatonForMinimization, equivalenceClassCount, initialMoorAutomaton)
+	//TODO: при парсинге можно сразу подготовить формат автомата для минимизации
+	const automatonForMinimization = remapInitialAutomatonMapToMinimizedAutomatonMap({
+		stateAndClassesMap,
+		initialMoorAutomaton,
+	})
+	const equivalenceClassCount = filterUnique(Array.from(stateAndClassesMap.values())).length
+	const minimizedAutomaton = runMinimization(automatonForMinimization, equivalenceClassCount, initialMoorAutomaton)
+	console.log(minimizedAutomaton)
 	// const moorPrintInfo = prepareMoorForPrint(minimizedAutomaton)
 	// printMoorAutomaton(moorPrintInfo)
 }
