@@ -1,4 +1,5 @@
 import * as fs from 'fs'
+import {minimizeMilesAutomaton} from './minimizeMilesAutomaton.js'
 import {minimizeMoorAutomaton} from './minimizeMoorAutomaton.js'
 
 /**
@@ -17,6 +18,9 @@ function start() {
 		const dataRows = data.split('\n')
 		if (dataRows[0] === 'Mr') {
 			minimizeMoorAutomaton(dataRows.slice(4))
+		}
+		else if (dataRows[0] === 'Ml') {
+			minimizeMilesAutomaton(dataRows.slice(4))
 		}
 	})
 }

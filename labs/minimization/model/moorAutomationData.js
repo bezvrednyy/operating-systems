@@ -1,17 +1,9 @@
-import {EquivalenceClass, InputSignal, State} from './common.js'
-
-/** @typedef {Map<InputSignal, State|EquivalenceClass>} */
-let MoorTransitionsMap
-
-/**
- * @typedef {Map<State, MoorTransitionsMap>}
- */
-let MoorInitialAutomatonMap
+import {AutomatonTransitionsMap, EquivalenceClass, InputSignal, State} from './common.js'
 
 /**
  * @typedef {{
  *   equivalenceClass: EquivalenceClass,
- *   transitions: MoorTransitionsMap,
+ *   transitions: AutomatonTransitionsMap,
  * }}
  */
 let MoorEquivalenceClassInfo
@@ -30,8 +22,7 @@ let MoorMinimizedAutomatonMap
 let MoorAutomatonPrintInfo
 
 export {
-	MoorTransitionsMap,
-	MoorInitialAutomatonMap,
+	AutomatonTransitionsMap,
 	MoorEquivalenceClassInfo,
 	MoorMinimizedAutomatonMap,
 	MoorAutomatonPrintInfo,

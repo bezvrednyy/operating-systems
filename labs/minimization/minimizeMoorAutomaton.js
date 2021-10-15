@@ -1,6 +1,6 @@
 import {filterUnique} from '../../common/utils/filterUnique.js'
-import {EquivalenceClass, InputSignal, OutputSignal, State} from './model/common.js'
-import {MoorMinimizedAutomatonMap, MoorEquivalenceClassInfo, MoorInitialAutomatonMap, MoorAutomatonPrintInfo} from './model/moorAutomationData.js'
+import {EquivalenceClass, InitialAutomatonMap, InputSignal, OutputSignal, State} from './model/common.js'
+import {MoorMinimizedAutomatonMap, MoorEquivalenceClassInfo, MoorAutomatonPrintInfo} from './model/moorAutomationData.js'
 
 const DEFAULT_INDENT = ' '.repeat(4)
 
@@ -20,7 +20,6 @@ function minimizeMoorAutomaton(rawData) {
 	const minimizedMoorAutomaton = runMinimization(automatonForMinimization, equivalenceClassCount, initialMoorAutomaton)
 	const moorPrintInfo = prepareMoorForPrint(minimizedMoorAutomaton)
 	printMoorAutomaton(moorPrintInfo)
-	//TODO:Реализовать алгоритм минимизации Мили. сперва на листочке #эффективность
 }
 
 /**
@@ -43,7 +42,7 @@ function createStateAndOutputSignalsMap(moorStates) {
  * @param {Array<string>} rawData
  * @return {{
  *   stateAndOutputSignalsMap: Map<State, OutputSignal>,
- *   initialMoorAutomaton: MoorInitialAutomatonMap,
+ *   initialMoorAutomaton: InitialAutomatonMap,
  * }}
  */
 function parseMoorAutomaton(rawData) {
@@ -66,7 +65,7 @@ function parseMoorAutomaton(rawData) {
 
 	const moorStates = rawData[0].split(' ')
 	const stateAndOutputSignalsMap = createStateAndOutputSignalsMap(moorStates)
-	/** @type {MoorInitialAutomatonMap} */
+	/** @type {InitialAutomatonMap} */
 	const initialMoorAutomaton = new Map()
 
 	for (let i = 1; i < rawData.length; ++i) {
@@ -87,7 +86,7 @@ function parseMoorAutomaton(rawData) {
 /**
  * @param {{
  *   stateAndOutputSignalsMap: Map<State, OutputSignal>,
- *   initialMoorAutomaton: MoorInitialAutomatonMap,
+ *   initialMoorAutomaton: InitialAutomatonMap,
  * }} args
  * @return {MoorMinimizedAutomatonMap}
  */
@@ -157,7 +156,7 @@ function prepareNewClasses(moorAutomaton) {
 /**
  * @param {MoorMinimizedAutomatonMap} moorAutomaton
  * @param {number} previousClassesCount
- * @param {MoorInitialAutomatonMap} initialMoorAutomatonMap
+ * @param {InitialAutomatonMap} initialMoorAutomatonMap
  */
 function runMinimization(moorAutomaton, previousClassesCount, initialMoorAutomatonMap) {
 	/** @type {MoorMinimizedAutomatonMap} */
