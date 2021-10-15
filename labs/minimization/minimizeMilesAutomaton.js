@@ -21,6 +21,9 @@ function minimizeMilesAutomaton(rawData) {
 	const equivalenceClassCount = filterUnique(Array.from(stateAndClassesMap.values())).length
 	const minimizedAutomaton = runMinimization(automatonForMinimization, equivalenceClassCount, initialMoorAutomaton)
 	console.log(minimizedAutomaton)
+	//TODO: подобрать другие тестовые данные для автомата
+	// Реализовать метод подготовки автомата Мили к печати и сам метод печати
+
 	// const moorPrintInfo = prepareMoorForPrint(minimizedAutomaton)
 	// printMoorAutomaton(moorPrintInfo)
 }
