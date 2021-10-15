@@ -1,6 +1,15 @@
 import {filterUnique} from '../../common/utils/filterUnique.js'
-import {EquivalenceClass, InitialAutomatonMap, InputSignal, OutputSignal, State} from './model/common.js'
-import {MoorMinimizedAutomatonMap, MoorEquivalenceClassInfo, MoorAutomatonPrintInfo} from './model/moorAutomationData.js'
+import {remapInitialAutomatonMapToMinimizedAutomatonMap} from './common.js'
+import {
+	EquivalenceClass,
+	EquivalenceClassInfo,
+	InitialAutomatonMap,
+	InputSignal,
+	MinimizedAutomatonMap,
+	OutputSignal,
+	State,
+} from './model/common.js'
+import {MoorAutomatonPrintInfo} from './model/moorAutomationData.js'
 
 const DEFAULT_INDENT = ' '.repeat(4)
 
@@ -12,8 +21,8 @@ function minimizeMoorAutomaton(rawData) {
 		stateAndOutputSignalsMap,
 		initialMoorAutomaton,
 	} = parseMoorAutomaton(rawData)
-	const automatonForMinimization = remapMoorInitialAutomatonMapToMoorMinimizedAutomatonMap({
-		stateAndOutputSignalsMap,
+	const automatonForMinimization = remapInitialAutomatonMapToMinimizedAutomatonMap({
+		stateAndClassesMap: stateAndOutputSignalsMap,
 		initialMoorAutomaton,
 	})
 	const equivalenceClassCount = filterUnique(Array.from(stateAndOutputSignalsMap.values())).length
@@ -84,38 +93,9 @@ function parseMoorAutomaton(rawData) {
 }
 
 /**
- * @param {{
- *   stateAndOutputSignalsMap: Map<State, OutputSignal>,
- *   initialMoorAutomaton: InitialAutomatonMap,
- * }} args
- * @return {MoorMinimizedAutomatonMap}
- */
-function remapMoorInitialAutomatonMapToMoorMinimizedAutomatonMap({
-	stateAndOutputSignalsMap,
-	initialMoorAutomaton,
-}) {
-	/** @type {MoorMinimizedAutomatonMap} */
-	const automatonForMinimizationMap = new Map()
-	initialMoorAutomaton.forEach((transitionsMap, startState) => {
-		/** @type {Map<InputSignal, EquivalenceClass>} */
-		const convertedTransitionsMap = new Map()
-		transitionsMap.forEach((nextState, inputSignal) => {
-			const outputSignal = stateAndOutputSignalsMap.get(nextState)
-			convertedTransitionsMap.set(inputSignal, outputSignal)
-		})
-
-		automatonForMinimizationMap.set(startState, {
-			equivalenceClass: stateAndOutputSignalsMap.get(startState),
-			transitions: convertedTransitionsMap,
-		})
-	})
-	return automatonForMinimizationMap
-}
-
-/**
- * @param {MoorMinimizedAutomatonMap} moorAutomaton
+ * @param {MinimizedAutomatonMap} moorAutomaton
  * @return {{
- *   getNewClassId: function(MoorEquivalenceClassInfo):string,
+ *   getNewClassId: function(EquivalenceClassInfo):string,
  *   newClassesCount: number,
  * }}
  */
@@ -125,7 +105,7 @@ function prepareNewClasses(moorAutomaton) {
 	let newClassesCount = 0
 
 	/**
-	 * @param {MoorEquivalenceClassInfo} startStateInfo
+	 * @param {EquivalenceClassInfo} startStateInfo
 	 * @return {string}
 	 */
 	function getUniqueStatesClassId(startStateInfo) {
@@ -154,12 +134,12 @@ function prepareNewClasses(moorAutomaton) {
 }
 
 /**
- * @param {MoorMinimizedAutomatonMap} moorAutomaton
+ * @param {MinimizedAutomatonMap} moorAutomaton
  * @param {number} previousClassesCount
  * @param {InitialAutomatonMap} initialMoorAutomatonMap
  */
 function runMinimization(moorAutomaton, previousClassesCount, initialMoorAutomatonMap) {
-	/** @type {MoorMinimizedAutomatonMap} */
+	/** @type {MinimizedAutomatonMap} */
 	const newAutomaton = new Map()
 	/** @type {Map<State, EquivalenceClass>} */
 	const stateAndEquivalenceClassMap = new Map()
@@ -194,13 +174,13 @@ function runMinimization(moorAutomaton, previousClassesCount, initialMoorAutomat
 }
 
 /**
- * @param {MoorMinimizedAutomatonMap} moorAutomaton
+ * @param {MinimizedAutomatonMap} moorAutomaton
  * @return {MoorAutomatonPrintInfo}
  */
 function prepareMoorForPrint(moorAutomaton) {
 	/** @type {Map<EquivalenceClass, State>} */
 	const resultStatesMap = new Map()
-	/** @type {MoorMinimizedAutomatonMap} */
+	/** @type {MinimizedAutomatonMap} */
 	const selectiveMoorAutomaton = new Map()
 
 	moorAutomaton.forEach((classInfo, startState) => {

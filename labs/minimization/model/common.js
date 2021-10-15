@@ -18,6 +18,19 @@ let AutomatonTransitionsMap
  */
 let InitialAutomatonMap
 
+/**
+ * @typedef {{
+ *   equivalenceClass: EquivalenceClass,
+ *   transitions: AutomatonTransitionsMap,
+ * }}
+ */
+let EquivalenceClassInfo
+
+/**
+ * @typedef {Map<State, EquivalenceClassInfo>}
+ */
+let MinimizedAutomatonMap
+
 export {
 	State,
 	OutputSignal,
@@ -25,4 +38,6 @@ export {
 	EquivalenceClass,
 	AutomatonTransitionsMap,
 	InitialAutomatonMap,
+	EquivalenceClassInfo,
+	MinimizedAutomatonMap,
 }
