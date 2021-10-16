@@ -1,9 +1,8 @@
 import {filterUnique} from '../../common/utils/filterUnique.js'
-import {remapInitialAutomatonMapToMinimizedAutomatonMap, runMinimization} from './common.js'
+import {fillTableMap, remapInitialAutomatonMapToMinimizedAutomatonMap, runMinimization} from './common.js'
 import {
 	EquivalenceClass,
-	EquivalenceClassInfo,
-	InitialAutomatonMap,
+	TransitionsTableMap,
 	InputSignal,
 	MinimizedAutomatonMap,
 	OutputSignal,
@@ -51,30 +50,13 @@ function createStateAndOutputSignalsMap(moorStates) {
  * @param {Array<string>} rawData
  * @return {{
  *   stateAndOutputSignalsMap: Map<State, OutputSignal>,
- *   initialMoorAutomaton: InitialAutomatonMap,
+ *   initialMoorAutomaton: TransitionsTableMap,
  * }}
  */
 function parseMoorAutomaton(rawData) {
-	/**
-	 * @param {InputSignal} inputSignal
-	 * @param {State} startState
-	 * @param {State} nextState
-	 */
-	function fillTransitions(inputSignal, startState, nextState) {
-		const transitionsMap = initialMoorAutomaton.get(startState)
-		if (transitionsMap) {
-			transitionsMap.set(inputSignal, nextState)
-		}
-		else {
-			initialMoorAutomaton.set(startState, new Map([
-				[inputSignal, nextState],
-			]))
-		}
-	}
-
 	const moorStates = rawData[0].split(' ')
 	const stateAndOutputSignalsMap = createStateAndOutputSignalsMap(moorStates)
-	/** @type {InitialAutomatonMap} */
+	/** @type {TransitionsTableMap} */
 	const initialMoorAutomaton = new Map()
 
 	for (let i = 1; i < rawData.length; ++i) {
@@ -82,7 +64,12 @@ function parseMoorAutomaton(rawData) {
 		const nextStates = rawNextStates.split(' ')
 
 		Array.from(stateAndOutputSignalsMap.keys()).forEach((startState, k) => {
-			fillTransitions(inputSignal, startState, nextStates[k])
+			fillTableMap({
+				table: initialMoorAutomaton,
+				inputSignal,
+				startState,
+				value: nextStates[k],
+			})
 		})
 	}
 

@@ -16,7 +16,7 @@ let AutomatonTransitionsMap
 /**
  * @typedef {Map<State, AutomatonTransitionsMap>}
  */
-let InitialAutomatonMap
+let TransitionsTableMap
 
 /**
  * @typedef {{
@@ -37,7 +37,7 @@ export {
 	InputSignal,
 	EquivalenceClass,
 	AutomatonTransitionsMap,
-	InitialAutomatonMap,
+	TransitionsTableMap,
 	EquivalenceClassInfo,
 	MinimizedAutomatonMap,
 }

@@ -1,17 +1,18 @@
 import {
 	EquivalenceClass,
 	EquivalenceClassInfo,
-	InitialAutomatonMap,
+	TransitionsTableMap,
 	InputSignal,
 	MinimizedAutomatonMap,
 	OutputSignal,
 	State,
 } from './model/common.js'
+import {OutputSignalsTableMap} from './model/miliesAutomationData.js'
 
 /**
  * @param {{
  *   stateAndClassesMap: Map<State, OutputSignal>,
- *   initialMoorAutomaton: InitialAutomatonMap,
+ *   initialMoorAutomaton: TransitionsTableMap,
  * }} args
  * @return {MinimizedAutomatonMap}
  */
@@ -79,9 +80,34 @@ function prepareNewClasses(moorAutomaton) {
 }
 
 /**
+ * @param {{
+ *   table: (TransitionsTableMap|OutputSignalsTableMap),
+ *   inputSignal: State,
+ *   startState: State,
+ *   value: (State|OutputSignal),
+ * }} args
+ */
+function fillTableMap({
+	table,
+	inputSignal,
+	startState,
+	value,
+}) {
+	const transitionsMap = table.get(startState)
+	if (transitionsMap) {
+		transitionsMap.set(inputSignal, value)
+	}
+	else {
+		table.set(startState, new Map([
+			[inputSignal, value],
+		]))
+	}
+}
+
+/**
  * @param {MinimizedAutomatonMap} moorAutomaton
  * @param {number} previousClassesCount
- * @param {InitialAutomatonMap} initialMoorAutomatonMap
+ * @param {TransitionsTableMap} initialMoorAutomatonMap
  */
 function runMinimization(moorAutomaton, previousClassesCount, initialMoorAutomatonMap) {
 	/** @type {MinimizedAutomatonMap} */
@@ -121,4 +147,5 @@ function runMinimization(moorAutomaton, previousClassesCount, initialMoorAutomat
 export {
 	remapInitialAutomatonMapToMinimizedAutomatonMap,
 	runMinimization,
+	fillTableMap,
 }
