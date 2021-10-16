@@ -1,6 +1,19 @@
 import {filterUnique} from '../../common/utils/filterUnique.js'
-import {remapInitialAutomatonMapToMinimizedAutomatonMap, runMinimization} from './common.js'
-import {EquivalenceClass, InitialAutomatonMap, InputSignal, OutputSignal, State} from './model/common.js'
+import {
+	fillTableMap,
+	remapInitialAutomatonMapToMinimizedAutomatonMap,
+	runMinimization,
+} from './common.js'
+import {
+	EquivalenceClass,
+	TransitionsTableMap,
+	InputSignal,
+	MinimizedAutomatonMap,
+	OutputSignal,
+	State,
+} from './model/common.js'
+import {OutputSignalsTableMap} from './model/miliesAutomationData.js'
+import {MoorAutomatonPrintInfo} from './model/moorAutomationData.js'
 
 const DEFAULT_INDENT = ' '.repeat(4)
 
@@ -21,8 +34,7 @@ function minimizeMilesAutomaton(rawData) {
 	const equivalenceClassCount = filterUnique(Array.from(stateAndClassesMap.values())).length
 	const minimizedAutomaton = runMinimization(automatonForMinimization, equivalenceClassCount, initialMoorAutomaton)
 	console.log(minimizedAutomaton)
-	//TODO: подобрать другие тестовые данные для автомата
-	// Реализовать метод подготовки автомата Мили к печати и сам метод печати
+	//TODO: Реализовать метод подготовки автомата Мили к печати и сам метод печати
 
 	// const moorPrintInfo = prepareMoorForPrint(minimizedAutomaton)
 	// printMoorAutomaton(moorPrintInfo)
@@ -32,31 +44,17 @@ function minimizeMilesAutomaton(rawData) {
  * @param {Array<string>} rawData
  * @return {{
  *   stateAndClassesMap: Map<State, EquivalenceClass>,
- *   initialMoorAutomaton: InitialAutomatonMap,
+ *   initialMoorAutomaton: TransitionsTableMap,
+ *   outputSignalsMap: OutputSignalsTableMap,
  * }}
  */
 function parseMilesAutomaton(rawData) {
-	/**
-	 * @param {InputSignal} inputSignal
-	 * @param {State} startState
-	 * @param {State} nextState
-	 */
-	function fillTransitions(inputSignal, startState, nextState) {
-		const transitionsMap = initialMoorAutomaton.get(startState)
-		if (transitionsMap) {
-			transitionsMap.set(inputSignal, nextState)
-		}
-		else {
-			initialMoorAutomaton.set(startState, new Map([
-				[inputSignal, nextState],
-			]))
-		}
-	}
-
 	/** @type {Map<State, OutputSignal>} */
 	const stateAndClassesMap = new Map()
-	/** @type {InitialAutomatonMap} */
+	/** @type {TransitionsTableMap} */
 	const initialMoorAutomaton = new Map()
+	/** @type {OutputSignalsTableMap} */
+	const outputSignalsMap = new Map()
 	const stateLetter = rawData[0]
 
 	for (let i = 1; i < rawData.length; ++i) {
@@ -70,15 +68,74 @@ function parseMilesAutomaton(rawData) {
 				? stateAndClassesMap.get(startState) + outputSignal
 				: outputSignal
 			stateAndClassesMap.set(startState, classesName)
-			fillTransitions(inputSignal, startState, nextState)
+			fillTableMap({
+				table: initialMoorAutomaton,
+				startState,
+				inputSignal,
+				value: nextState,
+			})
+			fillTableMap({
+				table: outputSignalsMap,
+				startState,
+				inputSignal,
+				value: outputSignal,
+			})
 		})
 	}
 
 	return {
 		stateAndClassesMap,
 		initialMoorAutomaton,
+		outputSignalsMap,
 	}
 }
+
+/**
+ * @param {MinimizedAutomatonMap} milesAutomaton
+ * @return {MoorAutomatonPrintInfo}
+ */
+function prepareMilesForPrint(milesAutomaton) {
+	/** @type {Map<EquivalenceClass, State>} */
+	const resultStatesMap = new Map()
+	/** @type {MinimizedAutomatonMap} */
+	const selectiveMoorAutomaton = new Map()
+
+	milesAutomaton.forEach((classInfo, startState) => {
+		if (resultStatesMap.has(classInfo.equivalenceClass)) {
+			return undefined
+		}
+		resultStatesMap.set(classInfo.equivalenceClass, startState)
+		selectiveMoorAutomaton.set(startState, classInfo)
+	})
+
+	let statesString = ''
+	/** @type {Map<InputSignal, string>} */
+	const transitionsMap = new Map()
+
+	selectiveMoorAutomaton.forEach((classInfo, startState) => {
+		statesString += startState + ' '
+		classInfo.transitions.forEach((nextClass, inputSignal) => {
+			const inputSignalTransitions = transitionsMap.get(inputSignal) || ''
+			transitionsMap.set(inputSignal, `${inputSignalTransitions} ${resultStatesMap.get(nextClass)}`)
+		})
+	})
+
+	return {
+		states: statesString,
+		transitions: transitionsMap,
+	}
+}
+
+/**
+ * @param {MoorAutomatonPrintInfo} moorPrintInfo
+ */
+function printMoorAutomaton(moorPrintInfo) {
+	console.log(`${DEFAULT_INDENT + moorPrintInfo.states.trim()}`)
+	moorPrintInfo.transitions.forEach((states, inputSignal) => {
+		console.log(`${inputSignal}: ${states.trim()}`)
+	})
+}
+
 
 export {
 	minimizeMilesAutomaton,
