@@ -24,6 +24,7 @@ function minimizeMilesAutomaton(rawData) {
 	const {
 		stateAndClassesMap,
 		initialMoorAutomaton,
+		outputSignalsMap,
 	} = parseMilesAutomaton(rawData)
 
 	//TODO: при парсинге можно сразу подготовить формат автомата для минимизации
@@ -33,11 +34,12 @@ function minimizeMilesAutomaton(rawData) {
 	})
 	const equivalenceClassCount = filterUnique(Array.from(stateAndClassesMap.values())).length
 	const minimizedAutomaton = runMinimization(automatonForMinimization, equivalenceClassCount, initialMoorAutomaton)
-	console.log(minimizedAutomaton)
-	//TODO: Реализовать метод подготовки автомата Мили к печати и сам метод печати
-
-	// const moorPrintInfo = prepareMoorForPrint(minimizedAutomaton)
-	// printMoorAutomaton(moorPrintInfo)
+	const automatonForPrint = prepareMilesForPrint({
+		milesAutomaton: minimizedAutomaton,
+		outputSignalsMap,
+	})
+	printMoorAutomaton(automatonForPrint)
+	//TODO:Проедебажить минимизацию: https://masters.donntu.org/2007/fvti/maluk/library/lib9.htm
 }
 
 /**
@@ -91,10 +93,16 @@ function parseMilesAutomaton(rawData) {
 }
 
 /**
- * @param {MinimizedAutomatonMap} milesAutomaton
+ * @param {{
+ *   milesAutomaton: MinimizedAutomatonMap,
+ *   outputSignalsMap: OutputSignalsTableMap,
+ * }} args
  * @return {MoorAutomatonPrintInfo}
  */
-function prepareMilesForPrint(milesAutomaton) {
+function prepareMilesForPrint({
+	milesAutomaton,
+	outputSignalsMap,
+}) {
 	/** @type {Map<EquivalenceClass, State>} */
 	const resultStatesMap = new Map()
 	/** @type {MinimizedAutomatonMap} */
@@ -113,10 +121,12 @@ function prepareMilesForPrint(milesAutomaton) {
 	const transitionsMap = new Map()
 
 	selectiveMoorAutomaton.forEach((classInfo, startState) => {
-		statesString += startState + ' '
+		statesString += startState + DEFAULT_INDENT
 		classInfo.transitions.forEach((nextClass, inputSignal) => {
 			const inputSignalTransitions = transitionsMap.get(inputSignal) || ''
-			transitionsMap.set(inputSignal, `${inputSignalTransitions} ${resultStatesMap.get(nextClass)}`)
+			const newState = resultStatesMap.get(nextClass)
+			const outputSignal = outputSignalsMap.get(startState).get(inputSignal)
+			transitionsMap.set(inputSignal, `${inputSignalTransitions} ${newState}/${outputSignal}`)
 		})
 	})
 
@@ -130,7 +140,7 @@ function prepareMilesForPrint(milesAutomaton) {
  * @param {MoorAutomatonPrintInfo} moorPrintInfo
  */
 function printMoorAutomaton(moorPrintInfo) {
-	console.log(`${DEFAULT_INDENT + moorPrintInfo.states.trim()}`)
+	console.log(`${DEFAULT_INDENT + ' ' + moorPrintInfo.states.trim()}`)
 	moorPrintInfo.transitions.forEach((states, inputSignal) => {
 		console.log(`${inputSignal}: ${states.trim()}`)
 	})
