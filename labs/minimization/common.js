@@ -15,6 +15,7 @@ import {OutputSignalsTableMap} from './model/miliesAutomationData.js'
  *   initialMoorAutomaton: TransitionsTableMap,
  * }} args
  * @return {MinimizedAutomatonMap}
+ * @description Выполняется начальный этап выделения классов эквивалентности
  */
 function remapInitialAutomatonMapToMinimizedAutomatonMap({
 	stateAndClassesMap,
@@ -43,12 +44,15 @@ function remapInitialAutomatonMapToMinimizedAutomatonMap({
  * @return {{
  *   getNewClassId: function(EquivalenceClassInfo):string,
  *   newClassesCount: number,
+ *   stateAndEquivalenceClassMap: Map<State, EquivalenceClass>,
  * }}
  */
 function prepareNewClasses(moorAutomaton) {
 	/** @type {Map<string, string>} */
 	const newClassesMap = new Map()
 	let newClassesCount = 0
+	/** @type {Map<State, EquivalenceClass>} */
+	const stateAndEquivalenceClassMap = new Map()
 
 	/**
 	 * @param {EquivalenceClassInfo} startStateInfo
@@ -70,12 +74,21 @@ function prepareNewClasses(moorAutomaton) {
 		}
 	})
 
+	/** @type {function(EquivalenceClassInfo):string} */
+	function getNewClassId(startStateInfo) {
+		const key = getUniqueStatesClassId(startStateInfo)
+		return newClassesMap.get(key)
+	}
+
+	moorAutomaton.forEach((startStateInfo, startState) => {
+		const uniqueClassId = getNewClassId(startStateInfo)
+		stateAndEquivalenceClassMap.set(startState, uniqueClassId)
+	})
+
 	return {
-		getNewClassId: startStateInfo => {
-			const key = getUniqueStatesClassId(startStateInfo)
-			return newClassesMap.get(key)
-		},
+		getNewClassId,
 		newClassesCount,
+		stateAndEquivalenceClassMap,
 	}
 }
 
@@ -112,14 +125,11 @@ function fillTableMap({
 function runMinimization(moorAutomaton, previousClassesCount, initialMoorAutomatonMap) {
 	/** @type {MinimizedAutomatonMap} */
 	const newAutomaton = new Map()
-	/** @type {Map<State, EquivalenceClass>} */
-	const stateAndEquivalenceClassMap = new Map()
-	const {getNewClassId, newClassesCount} = prepareNewClasses(moorAutomaton)
-
-	moorAutomaton.forEach((startStateInfo, startState) => {
-		const uniqueClassId = getNewClassId(startStateInfo)
-		stateAndEquivalenceClassMap.set(startState, uniqueClassId)
-	})
+	const {
+		getNewClassId,
+		newClassesCount,
+		stateAndEquivalenceClassMap,
+	} = prepareNewClasses(moorAutomaton)
 
 	moorAutomaton.forEach((startStateInfo, startState) => {
 		const {transitions} = startStateInfo

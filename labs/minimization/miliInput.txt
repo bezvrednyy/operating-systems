@@ -3,6 +3,5 @@ x
 x
 x
 q
-x1: q4/y1 q2/y0 q4/y1 q4/y1 q6/y0 q5/y0
-x2: q6/y0 q2/y0 q2/y0 q3/y0 q6/y0 q6/y0
-x3: q1/y0 q6/y1 q3/y0 q3/y0 q5/y1 q2/y1
+z1: q3/y1 q4/y1 q3/y1 q4/y1 q1/y1 q2/y1
+z2: q5/y1 q6/y1 q5/y2 q6/y2 q3/y1 q4/y1
