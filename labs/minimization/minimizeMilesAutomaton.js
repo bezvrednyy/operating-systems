@@ -27,7 +27,6 @@ function minimizeMilesAutomaton(rawData) {
 		outputSignalsMap,
 	} = parseMilesAutomaton(rawData)
 
-	//TODO: при парсинге можно сразу подготовить формат автомата для минимизации
 	const automatonForMinimization = remapInitialAutomatonMapToMinimizedAutomatonMap({
 		stateAndClassesMap,
 		initialMoorAutomaton,
@@ -39,7 +38,6 @@ function minimizeMilesAutomaton(rawData) {
 		outputSignalsMap,
 	})
 	printMoorAutomaton(automatonForPrint)
-	//TODO:Проедебажить минимизацию: https://masters.donntu.org/2007/fvti/maluk/library/lib9.htm
 }
 
 /**
