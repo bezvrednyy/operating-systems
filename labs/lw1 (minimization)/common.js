@@ -1,10 +1,7 @@
 import {
-	EquivalenceClass,
 	EquivalenceClassInfo,
 	TransitionsTableMap,
-	InputSignal,
 	MinimizedAutomatonMap,
-	OutputSignal,
 	State,
 } from './model/common.js'
 import {OutputSignalsTableMap} from './model/miliesAutomationData.js'

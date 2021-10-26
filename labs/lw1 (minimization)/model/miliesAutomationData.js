@@ -1,4 +1,4 @@
-import {InputSignal, OutputSignal, State} from './common.js'
+import {State} from './common.js'
 
 /** @typedef {Map<InputSignal, OutputSignal>} */
 let OutputSignalsMap

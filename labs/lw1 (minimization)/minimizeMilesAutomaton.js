@@ -5,11 +5,8 @@ import {
 	runMinimization,
 } from './common.js'
 import {
-	EquivalenceClass,
 	TransitionsTableMap,
-	InputSignal,
 	MinimizedAutomatonMap,
-	OutputSignal,
 	State,
 } from './model/common.js'
 import {OutputSignalsTableMap} from './model/miliesAutomationData.js'

@@ -1,4 +1,4 @@
-import {AutomatonTransitionsMap, InputSignal} from './common.js'
+import {AutomatonTransitionsMap} from './common.js'
 
 /**
  * @typedef {{

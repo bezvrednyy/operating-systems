@@ -1,11 +1,8 @@
 import {filterUnique} from '../../common/utils/filterUnique.js'
 import {fillTableMap, remapInitialAutomatonMapToMinimizedAutomatonMap, runMinimization} from './common.js'
 import {
-	EquivalenceClass,
 	TransitionsTableMap,
-	InputSignal,
 	MinimizedAutomatonMap,
-	OutputSignal,
 	State,
 } from './model/common.js'
 import {MoorAutomatonPrintInfo} from './model/moorAutomationData.js'

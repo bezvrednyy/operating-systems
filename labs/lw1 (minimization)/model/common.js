@@ -1,15 +1,6 @@
 /** @typedef {string} */
 let State
 
-/** @typedef {string} */
-let OutputSignal
-
-/** @typedef {string} */
-let InputSignal
-
-/** @typedef {string} */
-let EquivalenceClass
-
 /** @typedef {Map<InputSignal, State|EquivalenceClass>} */
 let AutomatonTransitionsMap
 
@@ -33,9 +24,6 @@ let MinimizedAutomatonMap
 
 export {
 	State,
-	OutputSignal,
-	InputSignal,
-	EquivalenceClass,
 	AutomatonTransitionsMap,
 	TransitionsTableMap,
 	EquivalenceClassInfo,
