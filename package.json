@@ -6,8 +6,8 @@
   },
   "scripts": {
     "lint": "eslint . --fix",
-    "run-lw1-mr": "node labs/minimization/index.js labs/minimization/moorInput.txt",
-    "run-lw1-ml": "node labs/minimization/index.js labs/minimization/miliInput.txt"
+    "run-lw1-mr": "node labs/lw1 (minimization)/index.js labs/lw1 (minimization)/moorInput.txt",
+    "run-lw1-ml": "node labs/lw1 (minimization)/index.js labs/lw1 (minimization)/miliInput.txt"
   },
   "dependencies": {
     "@types/node-fetch": "^3.0.3",
