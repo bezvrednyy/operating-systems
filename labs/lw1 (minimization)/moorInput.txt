@@ -1,7 +1,0 @@
-Mr
-x
-x
-x
-q1/y1 q2/y2 q3/y3 q4/y1 q5/y2 q6/y2 q7/y3
-x1: q5 q4 q5 q3 q4 q2 q5
-x2: q7 q1 q4 q2 q1 q3 q4
