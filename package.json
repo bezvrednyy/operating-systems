@@ -7,7 +7,8 @@
   "scripts": {
     "lint": "eslint . --fix",
     "run-lw1-mr": "node labs/lw1 (minimization)/index.js labs/lw1 (minimization)/inputs/moor_1.txt",
-    "run-lw1-ml": "node labs/lw1 (minimization)/index.js labs/lw1 (minimization)/inputs/mili_1.txt"
+    "run-lw1-ml": "node labs/lw1 (minimization)/index.js labs/lw1 (minimization)/inputs/mili_1.txt",
+    "run-lw2": "node labs/lw2-grammarToAutomaton/index.js labs/lw2-grammarToAutomaton/inputs/grammar_1.txt"
   },
   "dependencies": {
     "@types/node-fetch": "^3.0.3",
