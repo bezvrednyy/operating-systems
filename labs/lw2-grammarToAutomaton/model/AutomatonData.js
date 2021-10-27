@@ -10,7 +10,18 @@ let GrammarType
  */
 let ItemNFA
 
+/**
+ * @typedef {Map<InputSignal, EndState>}
+ */
+let TransitionsMap
+
+/**
+ * @typedef {Map<StartState, TransitionsMap>}
+ */
+let MapDFA
+
 export {
 	ItemNFA,
 	GrammarType,
+	MapDFA,
 }

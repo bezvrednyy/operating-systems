@@ -1,4 +1,5 @@
 import * as fs from 'fs'
+import {determinizeAutomaton} from './determinizeAutomaton.js'
 import {parseGrammarToNFA, printNFA} from './parseGrammarToNFA.js'
 
 function start() {
@@ -17,6 +18,7 @@ function start() {
 			console.error('Invalid syntax')
 			return
 		}
+		determinizeAutomaton(parsedData)
 		printNFA(parsedData.NFA)
 	})
 }
