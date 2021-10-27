@@ -1,10 +1,11 @@
-import {GrammarType, ItemNFA} from './model/AutomatonData.js'
+import {sortChars} from '../../common/utils/string.js'
+import {GrammarType, MapFA} from './model/AutomatonData.js'
 
 const END_STATE = 'H'
 
 /**
  * @typedef {{
- *   NFA: Array<ItemNFA>,
+ *   NFA: MapFA,
  *   grammarType: GrammarType,
  * }}
  */
@@ -19,8 +20,8 @@ function parseGrammarToNFA(dataRows) {
 	if (!grammarType) {
 		return null
 	}
-	/** @type {Array<ItemNFA>} */
-	const NFA = []
+	/** @type {MapFA} */
+	const NFA = new Map()
 
 	for (let i = 2; i < dataRows.length; i++) {
 		const [firstNonterminal, rawTransitionsString] = dataRows[i].split(' ')
@@ -28,11 +29,27 @@ function parseGrammarToNFA(dataRows) {
 		rawTransitions.forEach(transitionInfo => {
 			const inputSignal = transitionInfo[0]
 			const secondNonterminal = transitionInfo[1] || END_STATE
-			NFA.push({
-				startState: grammarType === 'right' ? firstNonterminal : secondNonterminal,
-				inputSignal,
-				endState: grammarType === 'right' ? secondNonterminal : firstNonterminal,
-			})
+			const startState = grammarType === 'right' ? firstNonterminal : secondNonterminal
+			const endState = grammarType === 'right' ? secondNonterminal : firstNonterminal
+			const transitionsMap = NFA.get(startState)
+			if (transitionsMap) {
+				//Каждая буква строки - это конечное состояние
+				const endStatesString = transitionsMap.get(inputSignal)
+				if (endStatesString) {
+					transitionsMap.set(inputSignal, sortChars({
+						value: endStatesString + endState,
+						needFilterUnique: true,
+					}))
+				}
+				else {
+					transitionsMap.set(inputSignal, endState)
+				}
+			}
+			else {
+				NFA.set(startState, new Map([
+					[inputSignal, endState],
+				]))
+			}
 		})
 	}
 
@@ -53,15 +70,15 @@ function defineGrammarType(rawType) {
 }
 
 /**
- * @param {Array<ItemNFA>} NFA
+ * @param {MapFA} NFA
  */
 function printNFA(NFA) {
-	NFA.forEach(({
-		startState,
-		inputSignal,
-		endState,
-	}) => {
-		console.log(`${startState} ${inputSignal} ${endState}`)
+	NFA.forEach((transitionsMap, startState) => {
+		transitionsMap.forEach((endStates, inputSignal) => {
+			endStates.split('').forEach(endState => {
+				console.log(`${startState} ${inputSignal} ${endState}`)
+			})
+		})
 	})
 }
 

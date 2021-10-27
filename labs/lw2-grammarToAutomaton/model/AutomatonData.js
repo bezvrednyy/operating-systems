@@ -2,15 +2,6 @@
 let GrammarType
 
 /**
- * @typedef {{
- *   startState: StartState,
- *   inputSignal: InputSignal,
- *   endState: EndState,
- * }}
- */
-let ItemNFA
-
-/**
  * @typedef {Map<InputSignal, EndState>}
  */
 let TransitionsMap
@@ -18,10 +9,9 @@ let TransitionsMap
 /**
  * @typedef {Map<StartState, TransitionsMap>}
  */
-let MapDFA
+let MapFA //Единая модель для NFA и DFA
 
 export {
-	ItemNFA,
 	GrammarType,
-	MapDFA,
+	MapFA,
 }
