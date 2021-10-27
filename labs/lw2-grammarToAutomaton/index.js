@@ -12,12 +12,12 @@ function start() {
 			return
 		}
 		const dataRows = data.split('\n')
-		const NFA = parseGrammarToNFA(dataRows)
-		if (!NFA) {
+		const parsedData = parseGrammarToNFA(dataRows)
+		if (!parsedData) {
 			console.error('Invalid syntax')
 			return
 		}
-		printNFA(NFA)
+		printNFA(parsedData.NFA)
 	})
 }
 

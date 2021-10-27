@@ -3,8 +3,16 @@ import {GrammarType, ItemNFA} from './model/AutomatonData.js'
 const END_STATE = 'H'
 
 /**
+ * @typedef {{
+ *   NFA: Array<ItemNFA>,
+ *   grammarType: GrammarType,
+ * }}
+ */
+let ParsedData
+
+/**
  * @param {Array<string>} dataRows
- * @return {?Array<ItemNFA>}
+ * @return {?ParsedData}
  */
 function parseGrammarToNFA(dataRows) {
 	const grammarType = dataRows.length > 3 && defineGrammarType(dataRows[0].toLowerCase())
@@ -28,7 +36,10 @@ function parseGrammarToNFA(dataRows) {
 		})
 	}
 
-	return NFA
+	return {
+		NFA,
+		grammarType,
+	}
 }
 
 /**
