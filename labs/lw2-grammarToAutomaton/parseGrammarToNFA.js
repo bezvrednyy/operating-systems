@@ -69,20 +69,6 @@ function defineGrammarType(rawType) {
 		: (rawType === 'r' ? 'right' : null)
 }
 
-/**
- * @param {MapFA} NFA
- */
-function printNFA(NFA) {
-	NFA.forEach((transitionsMap, startState) => {
-		transitionsMap.forEach((endStates, inputSignal) => {
-			endStates.split('').forEach(endState => {
-				console.log(`${startState} ${inputSignal} ${endState}`)
-			})
-		})
-	})
-}
-
 export {
 	parseGrammarToNFA,
-	printNFA,
 }

@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import {determinizeAutomaton} from './determinizeAutomaton.js'
-import {parseGrammarToNFA, printNFA} from './parseGrammarToNFA.js'
+import {parseGrammarToNFA} from './parseGrammarToNFA.js'
+import {printFiniteAutomaton} from './printFiniteAutomaton.js'
 
 function start() {
 	if (process.argv.length !== 3) {
@@ -18,8 +19,15 @@ function start() {
 			console.error('Invalid syntax')
 			return
 		}
-		determinizeAutomaton(parsedData)
-		printNFA(parsedData.NFA)
+		printFiniteAutomaton({
+			type: 'non-deterministic',
+			automaton: parsedData.NFA,
+		})
+		console.log('-------------------------------------')
+		printFiniteAutomaton({
+			type: 'deterministic',
+			automaton: determinizeAutomaton(parsedData),
+		})
 	})
 }
 

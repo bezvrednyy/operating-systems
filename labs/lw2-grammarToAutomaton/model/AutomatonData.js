@@ -11,8 +11,14 @@ let TransitionsMap
  */
 let MapFA //Единая модель для NFA и DFA
 
+/**
+ * @typedef {'deterministic'|'non-deterministic'}
+ */
+let AutomatonType
+
 export {
 	GrammarType,
 	MapFA,
 	TransitionsMap,
+	AutomatonType,
 }
