@@ -14,4 +14,5 @@ let MapFA //Единая модель для NFA и DFA
 export {
 	GrammarType,
 	MapFA,
+	TransitionsMap,
 }
